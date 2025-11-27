@@ -1,42 +1,9 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>ctf popup</title>
-</head>
 <body>
+<form id="f" action="javascript:alert(1)" method="GET"></form>
 <script>
-  // Try to open popup and use a few fallbacks so browsers actually show the alert.
-  // 1) Try to set popup location to a javascript: URL (sometimes works).
-  // 2) If that throws or is blocked, write a script into the popup document that calls alert.
-
-  (function(){
-    try {
-      // try to open a blank popup
-      var w = window.open('', '_blank');
-
-      // Some browsers allow this:
-      w.location = "javascript:alert(1)";
-
-      // In case the above fails (blocked), use a safe fallback after a small delay
-      setTimeout(function(){
-        try {
-          // If the popup still exists and hasn't shown alert, inject script into it
-          if (w && !w.closed) {
-            w.document.open();
-            w.document.write('<!doctype html><html><body><script>alert(1)<\/script></body></html>');
-            w.document.close();
-          }
-        } catch(e) {
-          // last resort: open a new window with data URL (may be blocked by CSP)
-          window.open("data:text/html,<script>alert(1)<\/script>", "_blank");
-        }
-      }, 150);
-    } catch(err) {
-      // super fallback
-      try { window.open("data:text/html,<script>alert(1)<\/script>", "_blank"); } catch(e){}
-    }
-  })();
+document.getElementById("f").submit();
 </script>
 </body>
 </html>
